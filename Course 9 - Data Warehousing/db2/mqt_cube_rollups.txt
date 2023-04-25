@@ -1,0 +1,86 @@
+-- Execute the sql statement below to create an MQT named countrystats.
+
+CREATE TABLE countrystats (country, year, totalbilledamount) AS
+  (select country, year, sum(billedamount)
+from factbilling
+left join dimcustomer
+on factbilling.customerid = dimcustomer.customerid
+left join dimmonth
+on factbilling.monthid=dimmonth.monthid
+group by country,year)
+     DATA INITIALLY DEFERRED
+     REFRESH DEFERRED
+     MAINTAINED BY SYSTEM;
+     
+     
+     
+select country, year, sum(billedamount)
+from factbilling
+left join dimcustomer
+on factbilling.customerid = dimcustomer.customerid
+left join dimmonth
+on factbilling.monthid=dimmonth.monthid
+group by country,year
+
+
+
+refresh table countrystats;
+
+
+select * from countrystats
+
+
+-- Create a cube for the columns year,country, category, sum(billedamount).
+
+select year, quartername, sum(billedamount) as totalbilledamount
+from factbilling
+left join dimcustomer
+on factbilling.customerid = dimcustomer.customerid
+left join dimmonth
+on factbilling.monthid=dimmonth.monthid
+group by grouping sets(year, quartername)
+
+
+-- Create a rollup for the columns country, category, sum(billedamount).
+
+
+select country, category, sum(billedamount) as totalbilledamount
+from factbilling
+left join dimcustomer
+on factbilling.customerid = dimcustomer.customerid
+left join dimmonth
+on factbilling.monthid=dimmonth.monthid
+group by rollup(country, category)
+order by country, category
+
+
+select year,country, category, sum(billedamount) as totalbilledamount
+from factbilling
+left join dimcustomer
+on factbilling.customerid = dimcustomer.customerid
+left join dimmonth
+on factbilling.monthid=dimmonth.monthid
+group by cube(year,country,category)
+order by year, country, category
+
+
+
+-- Create an MQT named average_billamount with columns year, quarter, category, country, average_bill_amount.
+
+
+CREATE TABLE average_billamount(year, quarter, category, country, average_bill_amount) AS
+  (select year, quarter, category, country, avg(billedamount) as average_bill_amount
+from factbilling
+left join dimcustomer
+on factbilling.customerid = dimcustomer.customerid
+left join dimmonth
+on factbilling.monthid=dimmonth.monthid
+group by year, quarter, category, country)
+     DATA INITIALLY DEFERRED
+     REFRESH DEFERRED
+     MAINTAINED BY SYSTEM;
+
+
+refresh table average_billamount;
+
+select * from average_billamount

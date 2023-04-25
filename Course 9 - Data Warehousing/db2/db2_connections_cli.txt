@@ -1,0 +1,3 @@
+db2cli writecfg add -database bludb -host <host> -port 31929 -parameter "SecurityTransportMode=SSL"
+db2cli writecfg add -dsn production -database bludb -host <host> -port 31929
+db2cli execsql -dsn production -user <user> -passwd <pass> -inputsql verify.sql
