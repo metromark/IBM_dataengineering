@@ -1,0 +1,42 @@
+-- Create a grouping sets query using the columns country, category, totalsales.
+
+select country, category, sum(amount) as totalsales
+from factsales
+left join dimcountry
+on factsales.countryid= dimcountry.countryid
+left join dimcategory
+on factsales.categoryid=dimcategory.categoryid
+group by grouping sets(country, category)
+
+-- Create a cube query using the columns year, country, and average sales.
+
+select year, country, avg(amount) as average_sales
+from factsales
+left join dimcountry
+on factsales.countryid= dimcountry.countryid
+left join dimdate
+on factsales.dateid=dimdate.dateid
+group by cube(year, country)
+
+
+-- Create a rollup query using the columns year, country, and totalsales.
+
+select year, country, sum(amount) as totalsales
+from factsales
+left join dimcountry
+on factsales.countryid= dimcountry.countryid
+left join dimdate
+on factsales.dateid=dimdate.dateid
+group by rollup(year, country)
+
+-- Create an MQT named total_sales_per_country that has the columns country and total_sales.
+
+CREATE TABLE total_sales_per_country(country, total_sales) AS
+  (select country, sum(amount) as total_sales
+from factsales
+left join dimcountry
+on factsales.countryid= dimcountry.countryid
+group by country)
+     DATA INITIALLY DEFERRED
+     REFRESH DEFERRED
+     MAINTAINED BY SYSTEM;
